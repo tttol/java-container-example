@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/rest")
 @RequiredArgsConstructor
 public class UserRestController {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         try {
             var users = userService.getAllUsers();
@@ -27,5 +27,10 @@ public class UserRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatusCode.valueOf(500)).build();
         }
+    }
+
+    @GetMapping("/hello")
+    public ResponseEntity<String> hello() {
+        return ResponseEntity.ok("Hello World");
     }
 }
