@@ -36,13 +36,12 @@ export class RdsStack extends cdk.Stack {
       securityGroups: [this.dbSecurityGroup],
       databaseName: 'conex',
       allocatedStorage: 20,
-      maxAllocatedStorage: 100,
+      maxAllocatedStorage: 30,
       storageType: rds.StorageType.GP3,
       multiAz: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       deletionProtection: false,
-      backupRetention: cdk.Duration.days(1),
-      preferredBackupWindow: '03:00-04:00',
+      backupRetention: cdk.Duration.days(0),
       preferredMaintenanceWindow: 'mon:04:00-mon:05:00',
     });
 

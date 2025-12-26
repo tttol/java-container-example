@@ -26,8 +26,8 @@ export class ApplicationStack extends cdk.Stack {
       imageScanOnPush: true,
       lifecycleRules: [
         {
-          description: 'Keep last 10 images',
-          maxImageCount: 10,
+          description: 'Keep last 5 images',
+          maxImageCount: 5,
         },
       ],
     });

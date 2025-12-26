@@ -28,10 +28,10 @@ export class EksStack extends cdk.Stack {
     });
 
     this.cluster.addNodegroupCapacity('ConexNodeGroup', {
-      instanceTypes: [new ec2.InstanceType('t3.medium')],
-      minSize: 2,
-      maxSize: 4,
-      desiredSize: 2,
+      instanceTypes: [new ec2.InstanceType('t3.small')],
+      minSize: 1,
+      maxSize: 2,
+      desiredSize: 1,
       diskSize: 20,
       amiType: eks.NodegroupAmiType.AL2023_X86_64_STANDARD,
     });
