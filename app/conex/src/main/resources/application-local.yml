@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/conex?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Tokyo
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: conex
+    password: conex
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+logging:
+  level:
+    io.github.tttol.conex: DEBUG

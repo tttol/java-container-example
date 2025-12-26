@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: conex
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases-package: io.github.tttol.conex
+  mapper-locations: classpath:mapper/**/*.xml
