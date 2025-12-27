@@ -6,81 +6,42 @@ This repository is an example application for learning containerized application
 # Architecture
 
 ```mermaid
-graph TB
-    subgraph Internet
-        User[User/Browser]
-    end
+architecture-beta
+    group vpc(cloud)[VPC 10.0.0.0/16]
+    group public(cloud)[Public Subnet] in vpc
+    group private(cloud)[Private Subnet] in vpc
+    group database(cloud)[Database Subnet] in vpc
+    group eks(cloud)[EKS Cluster] in private
+    group argocd_ns(cloud)[Namespace: argocd] in eks
+    group default_ns(cloud)[Namespace: default] in eks
 
-    subgraph AWS["AWS Cloud"]
-        subgraph VPC["VPC (10.0.0.0/16)"]
-            IGW[Internet Gateway]
+    service user(internet)[User] in vpc
+    service igw(internet)[Internet Gateway] in vpc
+    service nat(internet)[NAT Gateway] in public
+    service alb(internet)[Application Load Balancer] in public
+    service rds(database)[RDS MySQL 8.0] in database
+    service ecr(disk)[ECR Repository] in vpc
+    service secrets(disk)[Secrets Manager] in vpc
+    service argocd_server(server)[ArgoCD Server] in argocd_ns
+    service argocd_repo(server)[ArgoCD Repo Server] in argocd_ns
+    service argocd_controller(server)[ArgoCD Controller] in argocd_ns
+    service spring1(server)[SpringBoot Pod 1] in default_ns
+    service spring2(server)[SpringBoot Pod 2] in default_ns
+    service git(disk)[Git Repository]
 
-            subgraph PublicSubnet["Public Subnet (10.0.0.0/24)"]
-                NAT[NAT Gateway]
-                ALB[Application Load Balancer]
-            end
-
-            subgraph PrivateSubnet["Private Subnet (10.0.1.0/24)"]
-                subgraph EKS["EKS Cluster (conex-cluster)<br/>Kubernetes 1.31"]
-                    subgraph NodeGroup["Node Group (t3.small x1)"]
-                        subgraph ArgoCDNS["Namespace: argocd"]
-                            ArgoCDServer[ArgoCD Server]
-                            ArgoCDRepo[ArgoCD Repo Server]
-                            ArgoCDController[ArgoCD App Controller]
-                        end
-
-                        subgraph DefaultNS["Namespace: default"]
-                            SpringBoot1[SpringBoot App Pod 1]
-                            SpringBoot2[SpringBoot App Pod 2]
-                        end
-                    end
-                end
-            end
-
-            subgraph DatabaseSubnet["Database Subnet (10.0.2.0/24)"]
-                RDS[(RDS MySQL 8.0<br/>t3.micro)]
-            end
-        end
-
-        ECR[ECR Repository<br/>conex-app]
-        SecretsManager[Secrets Manager<br/>DB Credentials]
-    end
-
-    subgraph GitRepo["Git Repository"]
-        AppManifests[Kubernetes Manifests<br/>Deployment/Service/Ingress]
-    end
-
-    User -->|HTTPS| IGW
-    IGW --> ALB
-    ALB -->|Route traffic| SpringBoot1
-    ALB -->|Route traffic| SpringBoot2
-
-    SpringBoot1 -->|Query| RDS
-    SpringBoot2 -->|Query| RDS
-    SpringBoot1 -->|Get credentials| SecretsManager
-    SpringBoot2 -->|Get credentials| SecretsManager
-
-    NodeGroup -->|Pull image| ECR
-    NAT -->|Outbound| IGW
-    NodeGroup -.->|via NAT| NAT
-
-    ArgoCDRepo -->|Watch| AppManifests
-    ArgoCDController -->|Deploy| SpringBoot1
-    ArgoCDController -->|Deploy| SpringBoot2
-
-    RDS -.->|Credentials stored| SecretsManager
-
-    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:#232F3E
-    classDef k8s fill:#326CE5,stroke:#fff,stroke-width:2px,color:#fff
-    classDef app fill:#6DB33F,stroke:#fff,stroke-width:2px,color:#fff
-    classDef db fill:#527FFF,stroke:#fff,stroke-width:2px,color:#fff
-    classDef argocd fill:#EF7B4D,stroke:#fff,stroke-width:2px,color:#fff
-
-    class VPC,ECR,SecretsManager,ALB,NAT,IGW aws
-    class EKS,NodeGroup k8s
-    class SpringBoot1,SpringBoot2 app
-    class RDS db
-    class ArgoCDServer,ArgoCDRepo,ArgoCDController argocd
+    user:R --> L:igw
+    igw:R --> L:alb
+    alb:R --> L:spring1
+    alb:R --> L:spring2
+    spring1:B --> T:rds
+    spring2:B --> T:rds
+    spring1:R --> L:secrets
+    spring2:R --> L:secrets
+    eks:B --> T:ecr
+    nat:T --> B:igw
+    argocd_repo:R --> L:git
+    argocd_controller:R --> L:spring1
+    argocd_controller:R --> L:spring2
 ```
 
 ## Architecture Components
