@@ -8,6 +8,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: 260475105314.dkr.ecr.ap-northeast-1.amazonaws.com/tttol/conex
 
 jobs:
   build-and-push:
@@ -41,33 +42,23 @@ jobs:
         id: datetime
         run: echo "datetime=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: Validate ECR repository secret
-        run: |
-          if [ -z "${{ secrets.ECR_REPOSITORY }}" ]; then
-            echo "Error: ECR_REPOSITORY secret is not set or is empty"
-            exit 1
-          fi
-          echo "ECR_REPOSITORY is set (length: ${#ECR_REPO})"
-        env:
-          ECR_REPO: ${{ secrets.ECR_REPOSITORY }}
-
       - name: Build image with bootBuildImage
         working-directory: ./app/conex
         run: |
           ./gradlew bootBuildImage \
-            --imageName=${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+            --imageName=${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
 
       - name: Tag image as latest
         run: |
-          docker tag ${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }} ${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }} ${{ env.ECR_REPOSITORY }}:latest
 
       - name: Push image to Amazon ECR
         run: |
-          docker push ${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
-          docker push ${{ secrets.ECR_REPOSITORY }}:latest
+          docker push ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+          docker push ${{ env.ECR_REPOSITORY }}:latest
 
       - name: Output image tags
         run: |
           echo "Image pushed to ECR:"
-          echo "${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}"
-          echo "${{ secrets.ECR_REPOSITORY }}:latest"
+          echo "${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}"
+          echo "${{ env.ECR_REPOSITORY }}:latest"
