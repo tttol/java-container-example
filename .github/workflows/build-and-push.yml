@@ -8,7 +8,6 @@ on:
 
 env:
   AWS_REGION: ap-northeast-1
-  ECR_REPOSITORY: 260475105314.dkr.ecr.ap-northeast-1.amazonaws.com/tttol/conex
 
 jobs:
   build-and-push:
@@ -46,19 +45,19 @@ jobs:
         working-directory: ./app/conex
         run: |
           ./gradlew bootBuildImage \
-            --imageName=${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+            --imageName=${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
 
       - name: Tag image as latest
         run: |
-          docker tag ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }} ${{ env.ECR_REPOSITORY }}:latest
+          docker tag ${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }} ${{ secrets.ECR_REPOSITORY }}:latest
 
       - name: Push image to Amazon ECR
         run: |
-          docker push ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
-          docker push ${{ env.ECR_REPOSITORY }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+          docker push ${{ secrets.ECR_REPOSITORY }}:latest
 
       - name: Output image tags
         run: |
           echo "Image pushed to ECR:"
-          echo "${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}"
-          echo "${{ env.ECR_REPOSITORY }}:latest"
+          echo "${{ secrets.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}"
+          echo "${{ secrets.ECR_REPOSITORY }}:latest"
