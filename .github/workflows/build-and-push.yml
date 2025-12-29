@@ -1,0 +1,64 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: 260475105314.dkr.ecr.ap-northeast-1.amazonaws.com/tttol/conex
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get current datetime
+        id: datetime
+        run: echo "datetime=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Build image with bootBuildImage
+        working-directory: ./app/conex
+        run: |
+          ./gradlew bootBuildImage \
+            --imageName=${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+
+      - name: Tag image as latest
+        run: |
+          docker tag ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }} ${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Push image to Amazon ECR
+        run: |
+          docker push ${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}
+          docker push ${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Output image tags
+        run: |
+          echo "Image pushed to ECR:"
+          echo "${{ env.ECR_REPOSITORY }}:conex_${{ steps.datetime.outputs.datetime }}"
+          echo "${{ env.ECR_REPOSITORY }}:latest"

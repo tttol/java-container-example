@@ -5,44 +5,11 @@ This repository is an example application for learning containerized application
 
 # Architecture
 
-```mermaid
-architecture-beta
-    group vpc(cloud)[VPC 10.0.0.0/16]
-    group public(cloud)[Public Subnet] in vpc
-    group private(cloud)[Private Subnet] in vpc
-    group database(cloud)[Database Subnet] in vpc
-    group eks(cloud)[EKS Cluster] in private
-    group argocd_ns(cloud)[Namespace: argocd] in eks
-    group default_ns(cloud)[Namespace: default] in eks
+The system architecture is visualized in a draw.io diagram file: [architecture.drawio](./architecture.drawio)
 
-    service user(internet)[User] in vpc
-    service igw(internet)[Internet Gateway] in vpc
-    service nat(internet)[NAT Gateway] in public
-    service alb(internet)[Application Load Balancer] in public
-    service rds(database)[RDS MySQL 8.0] in database
-    service ecr(disk)[ECR Repository] in vpc
-    service secrets(disk)[Secrets Manager] in vpc
-    service argocd_server(server)[ArgoCD Server] in argocd_ns
-    service argocd_repo(server)[ArgoCD Repo Server] in argocd_ns
-    service argocd_controller(server)[ArgoCD Controller] in argocd_ns
-    service spring1(server)[SpringBoot Pod 1] in default_ns
-    service spring2(server)[SpringBoot Pod 2] in default_ns
-    service git(disk)[Git Repository]
-
-    user:R --> L:igw
-    igw:R --> L:alb
-    alb:R --> L:spring1
-    alb:R --> L:spring2
-    spring1:B --> T:rds
-    spring2:B --> T:rds
-    spring1:R --> L:secrets
-    spring2:R --> L:secrets
-    eks:B --> T:ecr
-    nat:T --> B:igw
-    argocd_repo:R --> L:git
-    argocd_controller:R --> L:spring1
-    argocd_controller:R --> L:spring2
-```
+**How to view:**
+- Open the file in [draw.io](https://app.diagrams.net/) or VS Code with the Draw.io Integration extension
+- The diagram shows the complete AWS infrastructure including VPC, subnets, EKS cluster, RDS database, and all component interactions
 
 ## Architecture Components
 
