@@ -16,7 +16,7 @@ spec:
       serviceAccountName: conex-app
       containers:
       - name: conex-app
-        image: <account-id>.dkr.ecr.<region>.amazonaws.com/conex-app:latest
+        image: 260475105314.dkr.ecr.ap-northeast-1.amazonaws.com/tttol/conex:latest
         ports:
         - containerPort: 8080
         env:
