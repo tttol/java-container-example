@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init-job
+  namespace: default
+spec:
+  template:
+    spec:
+      serviceAccountName: conex-app
+      containers:
+      - name: mysql-client
+        image: mysql:8.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          mysql -h conexrdsstack-conexdatabase01745d5e-un2eqjf4wzbl.c3c6uiqaolgo.ap-northeast-1.rds.amazonaws.com \
+            -u $DB_USER \
+            -p$DB_PASS \
+            conex < /sql/init.sql
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        volumeMounts:
+        - name: sql-script
+          mountPath: /sql
+      volumes:
+      - name: sql-script
+        configMap:
+          name: db-init-sql
+      restartPolicy: Never
+  backoffLimit: 3
