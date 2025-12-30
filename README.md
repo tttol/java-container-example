@@ -1,15 +1,6 @@
 # About this repository
-This repository is an example application for learning containerized applications. I want to learn the following technical skills:
-- Amazon ECS/EKS
-- Argo CD
-
-# Architecture
-
-The system architecture is visualized in a draw.io diagram file: [architecture.drawio](./architecture.drawio)
-
-**How to view:**
-- Open the file in [draw.io](https://app.diagrams.net/) or VS Code with the Draw.io Integration extension
-- The diagram shows the complete AWS infrastructure including VPC, subnets, EKS cluster, RDS database, and all component interactions
+This repository is an example application for learning containerized applications. 
+<img width="834" height="762" alt="スクリーンショット 2025-12-31 6 22 54" src="https://github.com/user-attachments/assets/b95fdc4a-f55d-4ee6-91ee-eb30ad3954cb" />
 
 ## Architecture Components
 
