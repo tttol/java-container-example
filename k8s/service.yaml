@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: conex-app-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: conex-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
