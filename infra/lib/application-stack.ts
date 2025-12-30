@@ -1,35 +1,37 @@
 import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as eks from 'aws-cdk-lib/aws-eks';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 interface ApplicationStackProps extends cdk.StackProps {
   cluster: eks.Cluster;
   dbSecret: secretsmanager.ISecret;
+  dbSecurityGroup: ec2.SecurityGroup;
 }
 
 export class ApplicationStack extends cdk.Stack {
-  public readonly ecrRepository: ecr.Repository;
   public readonly appServiceAccount: eks.ServiceAccount;
 
   constructor(scope: Construct, id: string, props: ApplicationStackProps) {
     super(scope, id, props);
 
-    const { cluster, dbSecret } = props;
+    const { cluster, dbSecret, dbSecurityGroup } = props;
 
-    this.ecrRepository = new ecr.Repository(this, 'ConexRepository', {
-      repositoryName: 'conex-app',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      emptyOnDelete: true,
-      imageScanOnPush: true,
-      lifecycleRules: [
-        {
-          description: 'Keep last 5 images',
-          maxImageCount: 5,
-        },
-      ],
+    const ecrRepository = ecr.Repository.fromRepositoryName(
+      this,
+      'ExistingConexRepository',
+      'tttol/conex'
+    );
+
+    new ec2.CfnSecurityGroupIngress(this, 'DBSecurityGroupIngress', {
+      ipProtocol: 'tcp',
+      fromPort: 3306,
+      toPort: 3306,
+      sourceSecurityGroupId: cluster.clusterSecurityGroup.securityGroupId,
+      groupId: dbSecurityGroup.securityGroupId,
+      description: 'Allow MySQL access from EKS cluster',
     });
 
     this.appServiceAccount = cluster.addServiceAccount('ConexAppServiceAccount', {
@@ -39,13 +41,7 @@ export class ApplicationStack extends cdk.Stack {
 
     dbSecret.grantRead(this.appServiceAccount);
 
-    this.ecrRepository.grantPullPush(this.appServiceAccount);
-
-    new cdk.CfnOutput(this, 'ECRRepositoryUri', {
-      value: this.ecrRepository.repositoryUri,
-      description: 'ECR Repository URI for Conex application',
-      exportName: 'ConexECRRepositoryUri',
-    });
+    ecrRepository.grantPullPush(this.appServiceAccount);
 
     new cdk.CfnOutput(this, 'ServiceAccountName', {
       value: this.appServiceAccount.serviceAccountName,

@@ -18,19 +18,15 @@ const rdsStack = new RdsStack(app, 'ConexRdsStack', {
   env,
   vpc: vpcStack.vpc,
 });
-rdsStack.addDependency(vpcStack);
 
 const eksStack = new EksStack(app, 'ConexEksStack', {
   env,
   vpc: vpcStack.vpc,
-  databaseSecurityGroup: rdsStack.dbSecurityGroup,
 });
-eksStack.addDependency(vpcStack);
-eksStack.addDependency(rdsStack);
 
 const applicationStack = new ApplicationStack(app, 'ConexApplicationStack', {
   env,
   cluster: eksStack.cluster,
   dbSecret: rdsStack.dbSecret,
+  dbSecurityGroup: rdsStack.dbSecurityGroup,
 });
-applicationStack.addDependency(eksStack);

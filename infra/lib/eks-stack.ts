@@ -7,7 +7,6 @@ import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
 
 interface EksStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
-  databaseSecurityGroup: ec2.SecurityGroup;
 }
 
 export class EksStack extends cdk.Stack {
@@ -16,7 +15,7 @@ export class EksStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: EksStackProps) {
     super(scope, id, props);
 
-    const { vpc, databaseSecurityGroup } = props;
+    const { vpc } = props;
 
     this.cluster = new eks.Cluster(this, 'ConexCluster', {
       vpc,
@@ -27,6 +26,14 @@ export class EksStack extends cdk.Stack {
       kubectlLayer: new KubectlV31Layer(this, 'KubectlLayer'),
     });
 
+    this.cluster.awsAuth.addRoleMapping(
+      iam.Role.fromRoleArn(this, 'AdminRole', 'arn:aws:iam::260475105314:role/aws-reserved/sso.amazonaws.com/ap-northeast-1/AWSReservedSSO_AdministratorAccess_7bb34305cec16433'),
+      {
+        groups: ['system:masters'],
+        username: 'admin-sso-user',
+      }
+    );
+
     this.cluster.addNodegroupCapacity('ConexNodeGroup', {
       instanceTypes: [new ec2.InstanceType('t3.small')],
       minSize: 1,
@@ -35,12 +42,6 @@ export class EksStack extends cdk.Stack {
       diskSize: 20,
       amiType: eks.NodegroupAmiType.AL2023_X86_64_STANDARD,
     });
-
-    databaseSecurityGroup.addIngressRule(
-      this.cluster.clusterSecurityGroup,
-      ec2.Port.tcp(3306),
-      'Allow MySQL access from EKS cluster'
-    );
 
     const albControllerServiceAccount = this.cluster.addServiceAccount('AWSLoadBalancerController', {
       name: 'aws-load-balancer-controller',

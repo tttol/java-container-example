@@ -9,7 +9,7 @@ export class VpcStack extends cdk.Stack {
     super(scope, id, props);
 
     this.vpc = new ec2.Vpc(this, 'ConexVpc', {
-      maxAzs: 1,
+      maxAzs: 2,
       natGateways: 1,
       ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
       subnetConfiguration: [
