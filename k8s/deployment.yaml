@@ -21,7 +21,7 @@ spec:
         - containerPort: 8080
         env:
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:mysql://<rds-endpoint>:3306/conex
+          value: jdbc:mysql://conexrdsstack-conexdatabase01745d5e-un2eqjf4wzbl.c3c6uiqaolgo.ap-northeast-1.rds.amazonaws.com:3306/conex
         - name: SPRING_DATASOURCE_USERNAME
           valueFrom:
             secretKeyRef:
