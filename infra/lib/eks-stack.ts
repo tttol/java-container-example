@@ -71,6 +71,7 @@ export class EksStack extends cdk.Stack {
             'elasticloadbalancing:DescribeLoadBalancerAttributes',
             'elasticloadbalancing:DescribeListeners',
             'elasticloadbalancing:DescribeListenerCertificates',
+            'elasticloadbalancing:DescribeListenerAttributes',
             'elasticloadbalancing:DescribeSSLPolicies',
             'elasticloadbalancing:DescribeRules',
             'elasticloadbalancing:DescribeTargetGroups',
@@ -186,7 +187,23 @@ export class EksStack extends cdk.Stack {
           ],
           Condition: {
             Null: {
-              'aws:RequestTag/elbv2.k8s.aws/cluster': 'true',
+              'aws:RequestTag/elbv2.k8s.aws/cluster': 'false',
+            },
+          },
+        },
+        {
+          Effect: 'Allow',
+          Action: [
+            'elasticloadbalancing:AddTags',
+            'elasticloadbalancing:RemoveTags',
+          ],
+          Resource: [
+            'arn:aws:elasticloadbalancing:*:*:targetgroup/*/*',
+            'arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*',
+            'arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*',
+          ],
+          Condition: {
+            Null: {
               'aws:ResourceTag/elbv2.k8s.aws/cluster': 'false',
             },
           },
