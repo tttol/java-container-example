@@ -4,6 +4,7 @@ This directory contains AWS CDK code for deploying the Conex Spring Boot applica
 
 ## Architecture Overview
 
+<img width="834" height="762" alt="スクリーンショット 2025-12-31 6 22 54" src="https://github.com/user-attachments/assets/b95fdc4a-f55d-4ee6-91ee-eb30ad3954cb" />
 The infrastructure consists of 4 stacks:
 
 1. **VpcStack** - Network infrastructure
